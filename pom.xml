@@ -4,15 +4,14 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>analysis-pom</artifactId>
-    <version>1.66</version>
-    <relativePath>../analysis-pom</relativePath>
+    <version>2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>analysis-core</artifactId>
   <packaging>hpi</packaging>
   <name>Static Analysis Utilities</name>
-  <version>1.89-SNAPSHOT</version>
-  <description>This plug-in provides utilities for the static code analysis plug-ins.</description>
+  <version>2.0-SNAPSHOT</version>
+  <description>This plug-in provides core classes for all static code analysis plug-ins.</description>
 
   <url>http://wiki.jenkins-ci.org/x/CwDgAQ</url>
 
