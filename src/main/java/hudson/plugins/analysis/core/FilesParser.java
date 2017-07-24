@@ -118,6 +118,24 @@ public class FilesParser extends MasterToSlaveFileCallable<ParserResult> {
      * @param shouldDetectModules
      *            determines whether modules should be detected from pom.xml or
      *            build.xml files
+     */
+    public FilesParser(final String pluginId, final String filePattern,
+            final AnnotationParser parser, final boolean shouldDetectModules) {
+        this(pluginId, filePattern, parser, shouldDetectModules, false);
+    }
+
+    /**
+     * Creates a new instance of {@link FilesParser}.
+     *
+     * @param pluginId
+     *            the ID of the plug-in that uses this parser
+     * @param filePattern
+     *            ant file-set pattern to scan for files to parse
+     * @param parser
+     *            the parser to apply on the found files
+     * @param shouldDetectModules
+     *            determines whether modules should be detected from pom.xml or
+     *            build.xml files
      * @param isMavenBuild
      *            determines whether this build uses maven
      */

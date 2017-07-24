@@ -68,14 +68,8 @@ public abstract class HealthAwarePublisher extends HealthAwareRecorder {
         try {
             result = perform(run, workspace, logger);
 
-            Run<?, ?> referenceBuild = result.getHistory().getReferenceBuild();
-
             if (GlobalSettings.instance().getFailOnCorrupt() && result.hasError()) {
                 return false;
-            }
-
-            if (referenceBuild != null) {
-                logger.log("Computing warning deltas based on reference build " + referenceBuild.getDisplayName());
             }
         }
         catch (InterruptedException exception) {
@@ -85,6 +79,10 @@ public abstract class HealthAwarePublisher extends HealthAwareRecorder {
         }
 
         if (isThresholdEnabled()) {
+            Run<?, ?> referenceBuild = result.getHistory().getReferenceBuild();
+            if (referenceBuild != null) {
+                logger.log("Warning deltas are based on reference build " + referenceBuild.getDisplayName());
+            }
             updateBuildResult(result, logger);
         }
 
