@@ -79,10 +79,6 @@ public abstract class HealthAwarePublisher extends HealthAwareRecorder {
         }
 
         if (isThresholdEnabled()) {
-            Run<?, ?> referenceBuild = result.getHistory().getReferenceBuild();
-            if (referenceBuild != null) {
-                logger.log("Warning deltas are based on reference build " + referenceBuild.getDisplayName());
-            }
             updateBuildResult(result, logger);
         }
 

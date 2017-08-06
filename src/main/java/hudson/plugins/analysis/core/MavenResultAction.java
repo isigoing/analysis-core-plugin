@@ -1,7 +1,6 @@
 package hudson.plugins.analysis.core;
 
 import javax.annotation.CheckForNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -15,19 +14,15 @@ import org.kohsuke.stapler.StaplerProxy;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 
 import hudson.FilePath;
 import hudson.maven.AggregatableAction;
 import hudson.maven.MavenAggregatedReport;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
-
-import hudson.model.AbstractBuild;
-import hudson.model.Run;
 import hudson.model.HealthReport;
 import hudson.model.Result;
-
+import hudson.model.Run;
 import hudson.plugins.analysis.util.PluginLogger;
 import hudson.plugins.analysis.util.StringPluginLogger;
 import hudson.plugins.analysis.util.ToolTipProvider;
@@ -49,6 +44,8 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
     private transient StringPluginLogger logger;
     private transient Set<MavenModule> modules = Sets.newHashSet();
     private final transient String pluginName;
+    private final boolean usePreviousBuildAsReference;
+    private final boolean useStableBuildAsReference;
 
     /**
      * Creates a new instance of {@link MavenResultAction}.
@@ -61,10 +58,13 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
      * @param pluginName
      *            name of the plug-in
      */
-    public MavenResultAction(final AbstractResultAction<T> delegate, final String defaultEncoding, final String pluginName) {
+    public MavenResultAction(final AbstractResultAction<T> delegate, final String defaultEncoding, final String pluginName,
+            final boolean usePreviousBuildAsReference, final boolean useStableBuildAsReference) {
         this.defaultEncoding = defaultEncoding;
         this.delegate = delegate;
         this.pluginName = pluginName;
+        this.usePreviousBuildAsReference = usePreviousBuildAsReference;
+        this.useStableBuildAsReference = useStableBuildAsReference;
     }
 
     @Override
@@ -266,7 +266,7 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
      * @return <code>true</code> if only stable builds should be used
      */
     public boolean useOnlyStableBuildsAsReference() {
-        return delegate.getResult().useOnlyStableBuildsAsReference();
+        return useOnlyStableBuildsAsReference();
     }
 
     /**
@@ -276,7 +276,7 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
      * @return <code>true</code> if the previous build should always be used.
      */
     public boolean usePreviousBuildAsStable() {
-        return delegate.getResult().usePreviousBuildAsStable();
+        return usePreviousBuildAsReference;
     }
 
     /**
@@ -284,20 +284,8 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
      *
      * @return the associated build of this action
      */
-    @WithBridgeMethods(value=AbstractBuild.class, adapterMethod="getAbstractBuild")
     public Run<?, ?> getOwner() {
-        return delegate.getOwner();
-    }
-
-    /**
-     * Added for backward compatibility. It generates <pre>AbstractBuild getOwner()</pre> bytecode during the build
-     * process, so old implementations can use that signature.
-     * 
-     * @see {@link WithBridgeMethods}
-     */
-    @Deprecated
-    private Object getAbstractBuild(final Run owner, final Class targetClass) {
-        return delegate.getOwner() instanceof AbstractBuild ? (AbstractBuild<?, ?>) delegate.getOwner() : null;
+        return delegate.getBuild();
     }
 
     /**
@@ -315,9 +303,8 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
     }
 
     @Override
-    @WithBridgeMethods(value=AbstractBuild.class, adapterMethod="getAbstractBuild")
     public final Run<?, ?> getBuild() {
-        return delegate.getOwner();
+        return delegate.getBuild();
     }
 
     @Override

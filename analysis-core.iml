@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -26,7 +26,7 @@
     <orderEntry type="library" name="Maven: xerces:xercesImpl:2.11.0" level="project" />
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.4.01" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: commons-io:commons-io:2.4" level="project" />
-    <orderEntry type="library" name="Maven: com.infradna.tool:bridge-method-annotation:1.14" level="project" />
+    <orderEntry type="library" name="Maven: com.infradna.tool:bridge-method-annotation:1.17" level="project" />
     <orderEntry type="library" name="Maven: org.jenkins-ci:annotation-indexer:1.4" level="project" />
     <orderEntry type="library" name="Maven: joda-time:joda-time:1.6" level="project" />
     <orderEntry type="library" name="Maven: org.jenkins-ci.plugins:structs:1.2" level="project" />

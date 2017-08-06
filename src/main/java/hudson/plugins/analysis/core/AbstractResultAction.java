@@ -2,8 +2,6 @@ package hudson.plugins.analysis.core;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,15 +9,10 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep.LastBuildAction;
 
-import hudson.maven.MavenBuild;
-import hudson.maven.MavenModule;
-import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.HealthReport;
 import hudson.model.HealthReportingAction;
@@ -122,18 +115,7 @@ public abstract class AbstractResultAction<T extends BuildResult> implements Sta
         return this;
     }
 
-    /**
-     * Returns the associated build of this action.
-     *
-     * @return the associated build of this action
-     */
-    @WithBridgeMethods(value=AbstractBuild.class, adapterMethod="getAbstractBuild")
-    public final Run<?, ?> getOwner() {
-        return owner;
-    }
-
     @Override
-    @WithBridgeMethods(value=AbstractBuild.class, adapterMethod="getAbstractBuild")
     public final Run<?, ?> getBuild() {
         return owner;
     }
@@ -147,17 +129,6 @@ public abstract class AbstractResultAction<T extends BuildResult> implements Sta
     @Override
     public Collection<? extends Action> getProjectActions() {
         return Collections.emptyList();
-    }
-
-    /**
-     * Added for backward compatibility. It generates <pre>AbstractBuild getOwner()</pre> bytecode during the build
-     * process, so old implementations can use that signature.
-     * 
-     * @see {@link WithBridgeMethods}
-     */
-    @Deprecated
-    private Object getAbstractBuild(final Run owner, final Class targetClass) {
-      return owner instanceof AbstractBuild ? (AbstractBuild) owner : null;
     }
 
     @Override
@@ -271,84 +242,6 @@ public abstract class AbstractResultAction<T extends BuildResult> implements Sta
     @Override @Exported
     public boolean isSuccessful() {
         return getResult().isSuccessful();
-    }
-
-    /**
-     * Aggregates the results of the specified maven module builds.
-     *
-     * @param moduleBuilds
-     *            the module builds to aggregate
-     * @return the aggregated result
-     * @deprecated replaced by {@link MavenResultAction}
-     */
-    @Deprecated
-    protected ParserResult createAggregatedResult(final Map<MavenModule, List<MavenBuild>> moduleBuilds) {
-        return new ParserResult();
-    }
-
-    /**
-     * Updates the build status if the number of annotations exceeds one of the
-     * thresholds.
-     *
-     * @param build
-     *            the build to change the status from
-     * @param buildResult
-     *            the build result
-     * @deprecated replaced by {@link MavenResultAction}
-     */
-    @Deprecated
-    protected void updateBuildHealth(final MavenBuild build, final BuildResult buildResult) {
-        // does nothing
-    }
-
-    /**
-     * Adds a new module to the specified project. The new module is obtained
-     * from the specified list of builds.
-     *
-     * @param aggregatedResult
-     *            the result to add the module to
-     * @param builds
-     *            the builds for a module
-     * @deprecated replaced by {@link MavenResultAction}
-     */
-    @Deprecated
-    protected void addModule(final ParserResult aggregatedResult, final List<MavenBuild> builds) {
-        // does nothing
-    }
-
-    /**
-     * Creates a new instance of <code>AbstractResultAction</code>.
-     *
-     * @param owner
-     *            the associated build of this action
-     * @param healthDescriptor
-     *            health descriptor
-     * @deprecated use
-     *             {@link #AbstractResultAction(AbstractBuild, AbstractHealthDescriptor, BuildResult)}
-     *             so that every action will have a result that is not null
-     */
-    @Deprecated
-    public AbstractResultAction(final AbstractBuild<?, ?> owner, final AbstractHealthDescriptor healthDescriptor) {
-        this.owner = owner;
-        this.healthDescriptor = healthDescriptor;
-    }
-
-    /**
-     * Creates a new instance of <code>AbstractResultAction</code>.
-     *
-     * @param owner
-     *            the associated build of this action
-     * @param healthDescriptor
-     *            health descriptor
-     * @param result
-     *            the result of the action
-     * @deprecated use {@link #AbstractResultAction(Run, AbstractHealthDescriptor, BuildResult)} instead
-     */
-    @Deprecated
-    public AbstractResultAction(final AbstractBuild<?, ?> owner, final AbstractHealthDescriptor healthDescriptor, final T result) {
-        this.owner = owner;
-        this.result = result;
-        this.healthDescriptor = healthDescriptor;
     }
 
     /** Backward compatibility. @deprecated */

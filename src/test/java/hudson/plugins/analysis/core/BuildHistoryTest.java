@@ -23,11 +23,12 @@ public class BuildHistoryTest {
      */
     @Test(expected = NoSuchElementException.class)
     public void testNoPreviousResult() {
-        BuildHistory history = createHistory(mockBuild());
-
+        HistoryProvider history = createHistoryProvider(mockBuild());
         assertFalse("Build has a previous result", history.hasPreviousResult());
+
+        ReferenceProvider referenceProvider = createReferenceProvider(mockBuild());
         assertEquals("Build has wrong reference annotations", 0,
-                history.getReferenceAnnotations().getNumberOfAnnotations());
+                referenceProvider.getIssues().getNumberOfAnnotations());
 
         history.getPreviousResult();
     }
@@ -55,11 +56,15 @@ public class BuildHistoryTest {
         when(action.getResult()).thenReturn(result);
         AnnotationContainer container = mock(AnnotationContainer.class);
         when(result.getContainer()).thenReturn(container);
-        BuildHistory history = createHistory(baseline);
 
+        HistoryProvider history = createHistoryProvider(baseline);
         assertTrue("Build has no previous result", history.hasPreviousResult());
         assertSame("Build has wrong previous result", result, history.getPreviousResult());
-        assertSame("Build has wrong reference result", container, history.getReferenceAnnotations());
+        // FIXME: check this
+        /*
+        ReferenceProvider referenceProvider = new StablePluginReference(mockBuild(), TestResultAction.class, false);
+        assertSame("Build has wrong reference result", container, referenceProvider.getIssues());
+        */
     }
 
     /**
@@ -92,7 +97,7 @@ public class BuildHistoryTest {
         AnnotationContainer container = mock(AnnotationContainer.class);
         when(result.getContainer()).thenReturn(container);
         when(result.getPluginResult()).thenReturn(pluginResult);
-        BuildHistory history = createHistory(baseline);
+        HistoryProvider history = createHistoryProvider(baseline);
 
         assertEquals("Build has previous result", expectedResult, history.hasPreviousResult());
     }
@@ -134,13 +139,15 @@ public class BuildHistoryTest {
 
         AnnotationContainer container = createSuccessfulResult(withSuccessResult);
 
-        BuildHistory history = createHistory(baseline);
+        HistoryProvider history = createHistoryProvider(baseline);
 
         assertTrue("Build has no previous result", history.hasPreviousResult());
         assertSame("Build has wrong previous result", failureResult, history.getPreviousResult());
-        assertTrue("Build has no reference build", history.hasReferenceBuild());
-        assertSame("Build has wrong reference result", withSuccessResult, history.getReferenceBuild());
-        assertSame("Build has wrong reference result", container, history.getReferenceAnnotations());
+
+        ReferenceProvider referenceProvider = createReferenceProvider(baseline);
+        assertTrue("Build has no reference build", referenceProvider.hasReference());
+        assertSame("Build has wrong reference result", withSuccessResult, referenceProvider.getReference());
+        assertSame("Build has wrong reference result", container, referenceProvider.getIssues());
     }
 
     /**
@@ -173,13 +180,15 @@ public class BuildHistoryTest {
         createSuccessfulResult(withSuccessResult);
         AnnotationContainer used = createSuccessfulResult(withSuccessResultAndSuccessfulBuild);
 
-        BuildHistory history = createHistory(baseline);
+        HistoryProvider history = createHistoryProvider(baseline);
 
         assertTrue("Build has no previous result", history.hasPreviousResult());
         assertSame("Build has wrong previous result", failureResult, history.getPreviousResult());
-        assertTrue("Build has no reference build", history.hasReferenceBuild());
-        assertSame("Build has wrong reference result", withSuccessResultAndSuccessfulBuild, history.getReferenceBuild());
-        assertSame("Build has wrong reference result", used, history.getReferenceAnnotations());
+
+        ReferenceProvider referenceProvider = createReferenceProvider(baseline);
+        assertTrue("Build has no reference build", referenceProvider.hasReference());
+        assertSame("Build has wrong reference result", withSuccessResultAndSuccessfulBuild, referenceProvider.getReference());
+        assertSame("Build has wrong reference result", used, referenceProvider.getIssues());
     }
 
     /**
@@ -198,9 +207,8 @@ public class BuildHistoryTest {
         createSuccessfulResult(unstableBuild);
         createSuccessfulResult(stableBuild);
 
-        BuildHistory history = createHistory(baseline);
-
-        assertSame("Unstable build is not reference build", unstableBuild, history.getReferenceBuild());
+        ReferenceProvider history = new StablePluginReference(baseline, TestResultAction.class, false);
+        assertSame("Unstable build is not reference build", unstableBuild, history.getReference());
     }
 
     /**
@@ -219,9 +227,8 @@ public class BuildHistoryTest {
         createSuccessfulResult(unstableBuild);
         createSuccessfulResult(stableBuild);
 
-        BuildHistory history = createStableBuildReferenceHistory(baseline);
-
-        assertSame("Stable build is not reference build", stableBuild, history.getReferenceBuild());
+        ReferenceProvider history = createReferenceProvider(baseline);
+        assertSame("Stable build is not reference build", stableBuild, history.getReference());
     }
 
     /**
@@ -242,10 +249,10 @@ public class BuildHistoryTest {
         createSuccessfulResult(referenceBuild);
         createFailureResult(previous);
 
-        BuildHistory referenceHistory = new BuildHistory(baseline, TestResultAction.class, false, false);
-        assertSame("First build is not reference build", referenceBuild, referenceHistory.getReferenceBuild());
-        BuildHistory previousHistory = new BuildHistory(baseline, TestResultAction.class, true, false);
-        assertSame("Previous build is not reference build", previous, previousHistory.getReferenceBuild());
+        ReferenceProvider referenceHistory = new StablePluginReference(baseline, TestResultAction.class, false);
+        assertSame("First build is not reference build", referenceBuild, referenceHistory.getReference());
+        ReferenceProvider previousHistory = new PreviousBuildReference(baseline, TestResultAction.class, false);
+        assertSame("Previous build is not reference build", previous, previousHistory.getReference());
     }
 
     private BuildResult createFailureResult(final Run withFailureResult) {
@@ -285,12 +292,12 @@ public class BuildHistoryTest {
      *            the build to start with
      * @return the build history under test
      */
-    private BuildHistory createHistory(final Run<?, ?> baseline) {
-        return new BuildHistory(baseline, TestResultAction.class, false, false);
+    private HistoryProvider createHistoryProvider(final Run<?, ?> baseline) {
+        return new BuildHistory(baseline, TestResultAction.class);
     }
 
-    private BuildHistory createStableBuildReferenceHistory(final Run<?, ?> baseline) {
-        return new BuildHistory(baseline, TestResultAction.class, false,  true);
+    private ReferenceProvider createReferenceProvider(final Run<?, ?> baseline) {
+        return new StablePluginReference(baseline, TestResultAction.class, true);
     }
 
     /**

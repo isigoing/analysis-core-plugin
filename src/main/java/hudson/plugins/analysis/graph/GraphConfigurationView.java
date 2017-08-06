@@ -12,17 +12,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-
 import com.google.common.collect.Lists;
+import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 
 import net.sf.json.JSONObject;
 
-import hudson.model.Job;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.plugins.analysis.core.AbstractHealthDescriptor;
-import hudson.plugins.analysis.core.BuildHistory;
+import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.util.Graph;
 
 /**
@@ -35,7 +34,7 @@ public abstract class GraphConfigurationView implements ModelObject {
     private final Job<?, ?> owner;
 
     private final String key;
-    private final BuildHistory buildHistory;
+    private final HistoryProvider buildHistory;
     private final AbstractHealthDescriptor healthDescriptor; // NOPMD
     private final GraphConfiguration configuration;
     private String urlPrefix;
@@ -52,33 +51,14 @@ public abstract class GraphConfigurationView implements ModelObject {
      * @param buildHistory
      *            the build history for this job
      */
-    public GraphConfigurationView(final GraphConfiguration configuration, final Job<?, ?> job, final String key, final BuildHistory buildHistory) {
+    public GraphConfigurationView(final GraphConfiguration configuration, final Job<?, ?> job, final String key, final HistoryProvider buildHistory) {
         this.configuration = configuration;
         this.owner = job;
         this.key = key;
         this.buildHistory = buildHistory;
-        healthDescriptor = buildHistory.getHealthDescriptor();
+        healthDescriptor = buildHistory.getBaseline().getHealthDescriptor();
     }
 
-    /**
-     * Creates a new instance of {@link GraphConfigurationView}.
-     *
-     * @param configuration
-     *            the graph configuration
-     * @param project
-     *            the owning project to configure the graphs for
-     * @param key
-     *            unique key of this graph
-     * @param buildHistory
-     *            the build history for this project
-     * @deprecated use
-     *             {@link #GraphConfigurationView(GraphConfiguration, Job, String, BuildHistory)}
-     */
-    @Deprecated
-    public GraphConfigurationView(final GraphConfiguration configuration, final AbstractProject<?, ?> project, final String key, final BuildHistory buildHistory) {
-        this(configuration, (Job<?, ?>) project, key, buildHistory);
-    }
-    
     /**
      * Creates a file with for the default values.
      *
@@ -92,23 +72,6 @@ public abstract class GraphConfigurationView implements ModelObject {
         return new File(job.getRootDir(), pluginName + ".txt");
     }
     
-    /**
-     * Creates a file with for the default values.
-     *
-     * @param project
-     *            the project used as directory for the file
-     * @param pluginName
-     *            the name of the plug-in
-     * @return the created file
-     *
-     * @deprecated use
-     *             {@link #createDefaultsFile(Job, String)}
-     */
-    @Deprecated
-    protected static File createDefaultsFile(final AbstractProject<?, ?> project, final String pluginName) {
-        return createDefaultsFile((Job<?, ?>) project, pluginName);
-    }
-
     /**
      * Returns the list of available graphs.
      *
@@ -324,7 +287,7 @@ public abstract class GraphConfigurationView implements ModelObject {
      * @return the time stamp of the associated build.
      */
     public long getTimestamp() {
-        return buildHistory.getTimestamp().getTimeInMillis();
+        return buildHistory.getBaseline().getBuild().getTimestamp().getTimeInMillis();
     }
 
     /**

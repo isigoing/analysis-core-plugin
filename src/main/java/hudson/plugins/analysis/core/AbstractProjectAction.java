@@ -343,13 +343,13 @@ public abstract class AbstractProjectAction<T extends ResultAction<?>> implement
      *
      * @return build history
      */
-    protected BuildHistory createBuildHistory() {
+    protected HistoryProvider createBuildHistory() {
         Run<?, ?> lastFinishedRun = getLastFinishedRun();
         if (lastFinishedRun == null) {
             return new NullBuildHistory();
         }
         else {
-            return new BuildHistory(lastFinishedRun, resultActionType, false, false);
+            return new BuildHistory(lastFinishedRun, resultActionType);
         }
     }
 
