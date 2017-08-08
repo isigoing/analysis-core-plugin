@@ -13,7 +13,14 @@ import hudson.plugins.analysis.util.model.DefaultAnnotationContainer;
  * @author Ullrich Hafner
  */
 public abstract class ReferenceFinder extends BuildHistory implements ReferenceProvider {
-    public static ReferenceProvider create(final Run<?, ?> run, final Class<? extends ResultAction> resultActionClass, final boolean usePreviousBuildAsReference, final boolean useStableBuildAsReference) {
+    public enum ReferenceProviderAlgorithms {
+        PREVIOUS_BUILD,
+
+
+    }
+
+    public static ReferenceProvider create(final Run<?, ?> run, final Class<? extends ResultAction> resultActionClass,
+            final boolean usePreviousBuildAsReference, final boolean useStableBuildAsReference) {
         if (usePreviousBuildAsReference) {
             return new PreviousBuildReference(run, resultActionClass, useStableBuildAsReference);
         }
