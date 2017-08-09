@@ -199,7 +199,7 @@ public abstract class HealthAwareRecorder extends Recorder implements HealthDesc
      *         <code>false</code> otherwise
      */
     protected boolean isThresholdEnabled() {
-        return new NullHealthDescriptor(this).isThresholdEnabled();
+        return thresholds.isValid();
     }
 
     /**
@@ -439,7 +439,6 @@ public abstract class HealthAwareRecorder extends Recorder implements HealthDesc
         }
     }
 
-    @Override
     public Thresholds getThresholds() {
         return thresholds;
     }

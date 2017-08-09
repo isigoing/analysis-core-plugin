@@ -1,15 +1,14 @@
 package hudson.plugins.analysis.core;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import hudson.model.HealthReport;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
+import hudson.model.HealthReport;
 import hudson.plugins.analysis.util.model.AnnotationProvider;
 
 /**
@@ -132,8 +131,6 @@ public class HealthReportBuilderTest {
     private HealthReportBuilder createHealthBuilder(final boolean isThresholdEnabled, final int threshold,
             final boolean isHealthEnabled, final int healthy, final int unHealthy) {
         AbstractHealthDescriptor healthDescriptor = mock(AbstractHealthDescriptor.class);
-        when(healthDescriptor.isThresholdEnabled()).thenReturn(isThresholdEnabled);
-        when(healthDescriptor.getLowerBoundOfThresholds()).thenReturn(threshold);
         when(healthDescriptor.isHealthyReportEnabled()).thenReturn(isHealthEnabled);
         when(healthDescriptor.getHealthyAnnotations()).thenReturn(healthy);
         when(healthDescriptor.getUnHealthyAnnotations()).thenReturn(unHealthy);

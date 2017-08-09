@@ -20,13 +20,11 @@ public abstract class AbstractHealthDescriptor implements HealthDescriptor {
     private static final long serialVersionUID = -3709673381162699834L;
 
     /** The minimum priority to consider during health and stability calculation. */
-    private final Priority priority;
+    private final Priority minimumPriority;
     /** Report health as 100% when the number of warnings is less than this value. */
     private final String healthy;
     /** Report health as 0% when the number of warnings is greater than this value. */
     private final String unHealthy;
-    /** Build status thresholds. */
-    private Thresholds thresholds;
 
     /**
      * Creates a new instance of {@link AbstractHealthDescriptor} based on the
@@ -35,25 +33,35 @@ public abstract class AbstractHealthDescriptor implements HealthDescriptor {
      * @param healthDescriptor the descriptor to copy the values from
      */
     public AbstractHealthDescriptor(final HealthDescriptor healthDescriptor) {
-        priority = healthDescriptor.getMinimumPriority();
-        healthy = healthDescriptor.getHealthy();
-        unHealthy = healthDescriptor.getUnHealthy();
-        thresholds = healthDescriptor.getThresholds();
+        this(healthDescriptor.getHealthy(), healthDescriptor.getUnHealthy(), healthDescriptor.getMinimumPriority());
+    }
+
+    /**
+     * Creates a new instance of {@link AbstractHealthDescriptor} based on the specified values.
+     *
+     * @param healthy         the healthy threshold, i.e. the number of issues when health is reported as 100%
+     * @param unHealthy       the unhealthy threshold, i.e. the number of issues when health is reported as 0%
+     * @param minimumPriority the minimum priority to consider when computing the health report. Issues with a priority
+     *                        less than this value will be ignored.
+     */
+    public AbstractHealthDescriptor(final String healthy, final String unHealthy, final Priority minimumPriority) {
+        this.minimumPriority = minimumPriority;
+        this.healthy = healthy;
+        this.unHealthy = unHealthy;
     }
 
     /**
      * Creates a new instance of {@link AbstractHealthDescriptor}.
      */
     public AbstractHealthDescriptor() {
-        thresholds = new Thresholds();
         healthy = StringUtils.EMPTY;
         unHealthy = StringUtils.EMPTY;
-        priority = Priority.LOW;
+        minimumPriority = Priority.LOW;
     }
 
     @Override @Exported
     public Priority getMinimumPriority() {
-        return priority;
+        return minimumPriority;
     }
 
     @Override @Exported
@@ -66,20 +74,15 @@ public abstract class AbstractHealthDescriptor implements HealthDescriptor {
         return unHealthy;
     }
 
-    @Override @Exported
-    public Thresholds getThresholds() {
-        return thresholds;
-    }
-
     /**
-     * Returns whether this health report build is enabled, i.e. at least one of
-     * the health or failed thresholds are provided.
+     * Returns whether health reporting is enabled, i.e. at least one of
+     * the health properties differs from the default values.
      *
-     * @return <code>true</code> if health or failed thresholds are provided,
+     * @return <code>true</code> if health thresholds are provided,
      *         <code>false</code> otherwise
      */
     public boolean isEnabled() {
-        return isHealthyReportEnabled() || isThresholdEnabled();
+        return isHealthyReportEnabled();
     }
 
     /**
@@ -90,25 +93,6 @@ public abstract class AbstractHealthDescriptor implements HealthDescriptor {
      * @return a localized description of the build health
      */
     protected abstract Localizable createDescription(final AnnotationProvider result);
-
-    /**
-     * Determines whether a threshold has been defined.
-     *
-     * @return <code>true</code> if a threshold has been defined
-     */
-    public boolean isThresholdEnabled() {
-        return thresholds.isValid();
-    }
-
-    /**
-     * Returns a lower bound of warnings that will guarantee that a build
-     * neither is unstable or failed.
-     *
-     * @return the number of warnings
-     */
-    public int getLowerBoundOfThresholds() {
-        return thresholds.getLowerBound();
-    }
 
     /**
      * Determines whether a health report should be created.
@@ -169,29 +153,13 @@ public abstract class AbstractHealthDescriptor implements HealthDescriptor {
      */
     @SuppressWarnings("deprecation")
     protected Object readResolve() {
-        if (thresholds == null) {
-            thresholds = new Thresholds();
-
-            if (threshold != null) {
-                thresholds.unstableTotalAll = threshold;
-                threshold = null; // NOPMD
-            }
-            if (newThreshold != null) {
-                thresholds.unstableNewAll = newThreshold;
-                newThreshold = null; // NOPMD
-            }
-            if (failureThreshold != null) {
-                thresholds.failedTotalAll = failureThreshold;
-                failureThreshold = null; //NOPMD
-            }
-            if (newFailureThreshold != null) {
-                thresholds.failedNewAll = newFailureThreshold;
-                newFailureThreshold = null; // NOPMD
-            }
-        }
+        thresholds = null;
         return this;
     }
 
+    /** Backward compatibility. @deprecated */
+    @Deprecated
+    private transient Thresholds thresholds;
     /** Backward compatibility. @deprecated */
     @Deprecated
     private transient String threshold;

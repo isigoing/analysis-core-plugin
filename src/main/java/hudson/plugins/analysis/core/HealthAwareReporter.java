@@ -276,7 +276,6 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
         return getUseStableBuildAsReference();
     }
 
-    @Override
     public Thresholds getThresholds() {
         return thresholds;
     }
@@ -390,7 +389,7 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
         T buildResult = createResult(mavenBuild, result);
 
         StringPluginLogger pluginLogger = new StringPluginLogger(pluginName);
-        if (new NullHealthDescriptor(this).isThresholdEnabled()) {
+        if (thresholds.isValid()) {
             String baseUrl = getDescriptor().getPluginResultUrlName();
             buildResult.evaluateStatus(thresholds, useDeltaValues, canComputeNew(), pluginLogger, baseUrl);
         }

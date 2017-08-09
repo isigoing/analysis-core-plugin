@@ -135,12 +135,7 @@ public abstract class MavenResultAction<T extends BuildResult> implements Staple
     }
 
     private T createAggregatedResult(@CheckForNull final T existingResult, final T additionalResult) {
-        T createdResult = createResult(existingResult, additionalResult);
-        if (new NullHealthDescriptor(delegate.getHealthDescriptor()).isThresholdEnabled()) {
-            createdResult.evaluateStatus(additionalResult.getThresholds(), additionalResult.canUseDeltaValues(),
-                    getLogger(), getUrlName());
-        }
-        return createdResult;
+        return createResult(existingResult, additionalResult);
     }
 
     /**

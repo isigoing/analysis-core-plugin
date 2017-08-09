@@ -249,7 +249,6 @@ public abstract class HealthAwareMavenReporter extends MavenReporter implements 
     }
     // CHECKSTYLE:ON
 
-    @Override
     public Thresholds getThresholds() {
         return thresholds;
     }

@@ -11,14 +11,6 @@ import hudson.plugins.analysis.util.model.Priority;
  */
 public interface HealthDescriptor extends Serializable {
     /**
-     * Returns the threshold of all annotations to be reached if a build should
-     * be considered as unstable or failed, resp.
-     *
-     * @return the threshold
-     */
-    Thresholds getThresholds();
-
-    /**
      * Returns the healthy threshold, i.e. when health is reported as 100%.
      *
      * @return the 100% healthiness

@@ -2,6 +2,7 @@ package hudson.plugins.analysis.graph;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -76,7 +77,7 @@ public class HealthGraphTest {
     /**
      * Tests whether we don't get a healthy report if the reporting is disabled.
      */
-    @Test
+    @Test @Ignore("Enable if health graph should show threshold again")
     public void testThresholdSeriesCalculator() {
         AbstractHealthDescriptor healthDescriptor = createHealthBuilder(true, 10, false, 20, 50);
 
@@ -153,8 +154,6 @@ public class HealthGraphTest {
     private AbstractHealthDescriptor createHealthBuilder(final boolean isThresholdEnabled, final int threshold,
             final boolean isHealthEnabled, final int healthy, final int unHealthy) {
         AbstractHealthDescriptor healthDescriptor = mock(AbstractHealthDescriptor.class);
-        when(healthDescriptor.isThresholdEnabled()).thenReturn(isThresholdEnabled);
-        when(healthDescriptor.getLowerBoundOfThresholds()).thenReturn(threshold);
         when(healthDescriptor.isHealthyReportEnabled()).thenReturn(isHealthEnabled);
         when(healthDescriptor.getHealthyAnnotations()).thenReturn(healthy);
         when(healthDescriptor.getUnHealthyAnnotations()).thenReturn(unHealthy);

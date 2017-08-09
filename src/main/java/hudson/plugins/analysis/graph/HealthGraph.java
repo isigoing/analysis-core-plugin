@@ -81,17 +81,6 @@ public class HealthGraph extends CategoryBuildResultGraph {
                 series.add(0);
             }
         }
-        else if (healthDescriptor.isThresholdEnabled()) {
-            series.add(Math.min(remainder, healthDescriptor.getLowerBoundOfThresholds()));
-
-            remainder -= healthDescriptor.getLowerBoundOfThresholds();
-            if (remainder > 0) {
-                series.add(remainder);
-            }
-            else {
-                series.add(0);
-            }
-        }
         else { // at least a graph should be shown if the health reporting has been disabled in the meantime
             series.add(remainder);
         }
@@ -111,7 +100,7 @@ public class HealthGraph extends CategoryBuildResultGraph {
      *         <code>false</code> if the graph should use two colors.
      */
     private boolean useThreeColors() {
-        return healthDescriptor.isHealthyReportEnabled() || !healthDescriptor.isThresholdEnabled();
+        return healthDescriptor.isHealthyReportEnabled();
     }
 
     // CHECKSTYLE:OFF
