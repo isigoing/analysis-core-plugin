@@ -207,7 +207,7 @@ public class BuildHistoryTest {
         createSuccessfulResult(unstableBuild);
         createSuccessfulResult(stableBuild);
 
-        ReferenceProvider history = new StablePluginReference(baseline, TestResultAction.class, false);
+        ReferenceProvider history = new StablePluginReference(baseline, createSelector(), false);
         assertSame("Unstable build is not reference build", unstableBuild, history.getReference());
     }
 
@@ -249,9 +249,9 @@ public class BuildHistoryTest {
         createSuccessfulResult(referenceBuild);
         createFailureResult(previous);
 
-        ReferenceProvider referenceHistory = new StablePluginReference(baseline, TestResultAction.class, false);
+        ReferenceProvider referenceHistory = new StablePluginReference(baseline, createSelector(), false);
         assertSame("First build is not reference build", referenceBuild, referenceHistory.getReference());
-        ReferenceProvider previousHistory = new PreviousBuildReference(baseline, TestResultAction.class, false);
+        ReferenceProvider previousHistory = new PreviousBuildReference(baseline, createSelector(), false);
         assertSame("Previous build is not reference build", previous, previousHistory.getReference());
     }
 
@@ -293,11 +293,15 @@ public class BuildHistoryTest {
      * @return the build history under test
      */
     private HistoryProvider createHistoryProvider(final Run<?, ?> baseline) {
-        return new BuildHistory(baseline, TestResultAction.class);
+        return new BuildHistory(baseline, createSelector());
     }
 
     private ReferenceProvider createReferenceProvider(final Run<?, ?> baseline) {
-        return new StablePluginReference(baseline, TestResultAction.class, true);
+        return new StablePluginReference(baseline, createSelector(), true);
+    }
+
+    private DefaultResultSelector createSelector() {
+        return new DefaultResultSelector(TestResultAction.class);
     }
 
     /**

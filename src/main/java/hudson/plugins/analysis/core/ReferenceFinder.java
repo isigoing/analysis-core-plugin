@@ -13,31 +13,31 @@ import hudson.plugins.analysis.util.model.DefaultAnnotationContainer;
  * @author Ullrich Hafner
  */
 public abstract class ReferenceFinder extends BuildHistory implements ReferenceProvider {
-    public enum ReferenceProviderAlgorithms {
-        PREVIOUS_BUILD,
-
-
+    public static ReferenceProvider create(final Run<?, ?> run, final Class<? extends ResultAction> action,
+            final boolean usePreviousBuildAsReference, final boolean useStableBuildAsReference) {
+        return create(run, new DefaultResultSelector(action), usePreviousBuildAsReference, useStableBuildAsReference);
     }
 
-    public static ReferenceProvider create(final Run<?, ?> run, final Class<? extends ResultAction> resultActionClass,
+    public static ReferenceProvider create(final Run<?, ?> run, final ResultSelector selector,
             final boolean usePreviousBuildAsReference, final boolean useStableBuildAsReference) {
         if (usePreviousBuildAsReference) {
-            return new PreviousBuildReference(run, resultActionClass, useStableBuildAsReference);
+            return new PreviousBuildReference(run, selector, useStableBuildAsReference);
         }
         else {
-            return new StablePluginReference(run, resultActionClass, useStableBuildAsReference);
+            return new StablePluginReference(run, selector, useStableBuildAsReference);
         }
     }
+
     /**
      * Creates a new instance of {@link BuildHistory}.
      *
      * @param baseline
      *            the build to start the history from
-     * @param type
-     *            type of the action that contains the build results
+     * @param selector
+     *            selects the associated action from a build
      */
-    public ReferenceFinder(final Run<?, ?> baseline, final Class<? extends ResultAction> type) {
-        super(baseline, type);
+    public ReferenceFinder(final Run<?, ?> baseline, final ResultSelector selector) {
+        super(baseline, selector);
     }
 
     /**
@@ -57,8 +57,7 @@ public abstract class ReferenceFinder extends BuildHistory implements ReferenceP
         return getReferenceAction() != null;
     }
 
-    @Override
-    @CheckForNull
+    @Override @CheckForNull
     public Run<?, ?> getReference() {
         ResultAction<? extends BuildResult> action = getReferenceAction();
         if (action != null) {

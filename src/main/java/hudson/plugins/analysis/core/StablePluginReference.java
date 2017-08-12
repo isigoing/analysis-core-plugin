@@ -12,13 +12,12 @@ public class StablePluginReference extends ReferenceFinder {
 
     /**
      * Creates a new instance of {@link PreviousBuildReference}.
-     *
-     * @param baseline     the build to start the history from
-     * @param type         type of the action that contains the build results
+     *  @param baseline     the build to start the history from
+     * @param selector         type of the action that contains the build results
      * @param mustBeStable builds must be of overall status stable
      */
-    public StablePluginReference(final Run<?, ?> baseline, final Class<? extends ResultAction> type, final boolean mustBeStable) {
-        super(baseline, type);
+    public StablePluginReference(final Run<?, ?> baseline, final ResultSelector selector, final boolean mustBeStable) {
+        super(baseline, selector);
         this.mustBeStable = mustBeStable;
     }
 

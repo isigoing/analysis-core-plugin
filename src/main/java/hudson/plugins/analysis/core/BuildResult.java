@@ -97,8 +97,8 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
     /** All fixed warnings in the current build. */
     @SuppressFBWarnings("Se")
     private transient WeakReference<Collection<FileAnnotation>> fixedWarningsReference;
-    /** The build history for the results of this plug-in. */
     private transient ReferenceProvider history;
+    private transient HistoryProvider buildHistory;
 
     /** The number of warnings in this build. */
     private int numberOfWarnings;
@@ -204,17 +204,17 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      *
      * @param build
      *            the current build as owner of this action
-     * @param history
-     *            build history
+     * @param referenceProvider
+     *            build referenceProvider
      * @param result
      *            the parsed result with all annotations
      * @param defaultEncoding
      *            the default encoding to be used when reading and parsing
      * @since 1.73
      */
-    protected BuildResult(final Run<?, ?> build, final ReferenceProvider history,
+    protected BuildResult(final Run<?, ?> build, final ReferenceProvider referenceProvider, final HistoryProvider buildHistory,
             final ParserResult result, final String defaultEncoding) {
-        this(build, history, result, defaultEncoding, false);
+        this(build, referenceProvider, buildHistory, result, defaultEncoding, false);
     }
 
     /**
@@ -222,8 +222,8 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      *
      * @param build
      *            the current build as owner of this action
-     * @param history
-     *            build history
+     * @param referenceProvider
+     *            build referenceProvider
      * @param result
      *            the parsed result with all annotations
      * @param defaultEncoding
@@ -231,9 +231,10 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      * @param canSerialize
      *            determines if the issues should be serialized or not
      */
-    protected BuildResult(final Run<?, ?> build, final ReferenceProvider history,
+    protected BuildResult(final Run<?, ?> build, final ReferenceProvider referenceProvider, final HistoryProvider buildHistory,
             final ParserResult result, final String defaultEncoding, final boolean canSerialize) {
-        this.history = history;
+        this.history = referenceProvider;
+        this.buildHistory = buildHistory;
         owner = build;
         this.defaultEncoding = defaultEncoding;
 
@@ -242,7 +243,7 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
         errors = new ArrayList<String>(result.getErrorMessages());
         numberOfWarnings = result.getNumberOfAnnotations();
 
-        AnnotationContainer referenceResult = history.getIssues();
+        AnnotationContainer referenceResult = referenceProvider.getIssues();
 
         delta = result.getNumberOfAnnotations() - referenceResult.getNumberOfAnnotations();
         lowDelta = computeDelta(result, referenceResult, Priority.LOW);
@@ -277,7 +278,7 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
 
         computeZeroWarningsHighScore(build, result);
 
-        defineReferenceBuild(history);
+        defineReferenceBuild(referenceProvider);
 
         if (canSerialize) {
             serializeAnnotations(allWarnings, fixedWarnings);
@@ -332,9 +333,8 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      *            the current result
      */
     private void computeZeroWarningsHighScore(final Run<?, ?> build, final ParserResult currentResult) {
-        HistoryProvider historyProvider = createBuildHistory(build);
-        if (historyProvider.hasPreviousResult()) {
-            BuildResult previous = historyProvider.getPreviousResult();
+        if (buildHistory.hasPreviousResult()) {
+            BuildResult previous = buildHistory.getPreviousResult();
             if (currentResult.hasNoAnnotations()) {
                 if (previous.hasNoAnnotations()) {
                     zeroWarningsSinceBuild = previous.getZeroWarningsSinceBuild();
@@ -372,10 +372,6 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
         }
     }
 
-    protected HistoryProvider createBuildHistory(final Run<?, ?> build) {
-        return new BuildHistory(build, getResultActionType());
-    }
-
     /**
      * Returns whether a module with an error is part of this project.
      *
@@ -411,7 +407,8 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
             projectLock = new Object();
         }
         if (history == null) {
-            history = new StablePluginReference(owner, getResultActionType(), false);
+            history = new StablePluginReference(owner, new DefaultResultSelector(getResultActionType()),
+                    false);
         }
         if (modules == null) {
             modules = new HashSet<String>();
@@ -1197,8 +1194,7 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
         BuildResultEvaluator resultEvaluator = new BuildResultEvaluator(url);
         Result buildResult;
         StringBuilder messages = new StringBuilder();
-        HistoryProvider history = getHistoryProvider();
-        if (history.isEmpty() || !canComputeNew) {
+        if (buildHistory.isEmpty() || !canComputeNew) {
             logger.log("Ignore new warnings since this is the first valid build");
             buildResult = resultEvaluator.evaluateBuildResult(messages, thresholds, getAnnotations());
         }
@@ -1233,9 +1229,8 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
         pluginResult = result;
         owner.setResult(result);
 
-        HistoryProvider history = getHistoryProvider();
-        if (history.hasPreviousResult()) {
-            BuildResult previous = history.getPreviousResult();
+        if (buildHistory.hasPreviousResult()) {
+            BuildResult previous = buildHistory.getPreviousResult();
             if (isSuccessful()) {
                 if (previous.isSuccessful() && previous.isSuccessfulTouched()) {
                     successfulSinceBuild = previous.getSuccessfulSinceBuild();
@@ -1270,10 +1265,6 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
         }
     }
 
-    private HistoryProvider getHistoryProvider() {
-        return createBuildHistory(owner);
-    }
-
     /**
      * Returns the {@link Result} of the plug-in.
      *
@@ -1301,7 +1292,7 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      * TODO: remove
      */
     public boolean hasPreviousResult() {
-        return getHistoryProvider().hasPreviousResult();
+        return buildHistory.hasPreviousResult();
     }
 
     /**
@@ -1311,7 +1302,7 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      * TODO: remove
      */
     public BuildResult getPreviousResult() {
-        return getHistoryProvider().getPreviousResult();
+        return buildHistory.getPreviousResult();
     }
 
     /**

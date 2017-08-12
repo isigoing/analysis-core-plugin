@@ -344,12 +344,13 @@ public abstract class AbstractProjectAction<T extends ResultAction<?>> implement
      * @return build history
      */
     protected HistoryProvider createBuildHistory() {
+        // TODO: null object should not be part of overridable method
         Run<?, ?> lastFinishedRun = getLastFinishedRun();
         if (lastFinishedRun == null) {
             return new NullBuildHistory();
         }
         else {
-            return new BuildHistory(lastFinishedRun, resultActionType);
+            return new BuildHistory(lastFinishedRun, new DefaultResultSelector(resultActionType));
         }
     }
 

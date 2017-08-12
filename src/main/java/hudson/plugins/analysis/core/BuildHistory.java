@@ -9,28 +9,27 @@ import hudson.model.Result;
 import hudson.model.Run;
 
 /**
- * History of build results of a specific plug-in. The plug-in is identified by
- * the corresponding {@link ResultAction} type.
+ * Provides a history of build results. A build history start from a baseline and provides access for all previous
+ * results of the same type. The results are selected by a specified {@link ResultSelector}.
  *
  * @author Ulli Hafner
  */
 public class BuildHistory implements HistoryProvider {
     /** The build to start the history from. */
     private final Run<?, ?> baseline;
-    /** Type of the action that contains the build results. */
-    private final Class<? extends ResultAction> type;
+    private final ResultSelector selector;
 
     /**
      * Creates a new instance of {@link BuildHistory}.
      *
      * @param baseline
-     *            the build to start the historyz from
-     * @param type
-     *            type of the action that contains the build results
+     *            the build to start the history from
+     * @param selector
+     *            selects the associated action from a build
      */
-    public BuildHistory(final Run<?, ?> baseline, final Class<? extends ResultAction> type) {
+    public BuildHistory(final Run<?, ?> baseline, final ResultSelector selector) {
         this.baseline = baseline;
-        this.type = type;
+        this.selector = selector;
     }
 
     /**
@@ -60,17 +59,9 @@ public class BuildHistory implements HistoryProvider {
         return action != null && (action.isSuccessful() || !isStatusRelevant);
     }
 
-    /**
-     * Returns the result action of the specified build that should be used to
-     * compute the history.
-     *
-     * @param build
-     *            the build
-     * @return the result action
-     */
     @CheckForNull
     public ResultAction<? extends BuildResult> getResultAction(@Nonnull final Run<?, ?> build) {
-        return build.getAction(type);
+        return selector.get(build);
     }
 
     /**
