@@ -18,10 +18,8 @@ public class PluginLogger {
     /**
      * Creates a new instance of {@link PluginLogger}.
      *
-     * @param logger
-     *            the actual print stream to log to
-     * @param pluginName
-     *            the plug-in name
+     * @param logger     the actual print stream to log to
+     * @param pluginName the plug-in name
      */
     public PluginLogger(final PrintStream logger, final String pluginName) {
         this.logger = logger;
@@ -29,11 +27,10 @@ public class PluginLogger {
     }
 
     /**
-     * Creates a new instance of {@link PluginLogger}. Note that the logger
-     * needs to be set afterwards to avoid throwing a {@link NullPointerException}.
+     * Creates a new instance of {@link PluginLogger}. Note that the logger needs to be set afterwards to avoid throwing
+     * a {@link NullPointerException}.
      *
-     * @param pluginName
-     *            the plug-in name
+     * @param pluginName the plug-in name
      */
     // CHECKSTYLE:CONSTANTS-OFF
     protected PluginLogger(final String pluginName) {
@@ -58,18 +55,18 @@ public class PluginLogger {
     /**
      * Logs the specified message.
      *
-     * @param message the message
+     * @param format a <a href="../util/Formatter.html#syntax">format string</a>
+     * @param args   arguments referenced by the format specifiers in the format string
      */
-    public void log(final String message) {
-        logger.println(StringUtils.defaultString(pluginName) + message);
+    public void log(final String format, Object... args) {
+        logger.println(StringUtils.defaultString(pluginName) + String.format(format, args));
     }
 
 
     /**
      * Logs the specified throwable.
      *
-     * @param throwable
-     *            the throwable
+     * @param throwable the throwable
      */
     public void log(final Throwable throwable) {
         logger.println(StringUtils.defaultString(pluginName) + throwable.getMessage());

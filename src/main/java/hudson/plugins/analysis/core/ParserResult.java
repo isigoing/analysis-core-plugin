@@ -458,6 +458,24 @@ public class ParserResult implements Serializable {
     }
 
     /**
+     * Returns a summary message for the summary.jelly file.
+     *
+     * @param url the url of the results
+     * @return the summary message
+     * @since 2.0
+     */
+    public String getSummary(final String url) {
+        // FIXME l10n
+        return "Static Analysis: " + BuildResult.createDefaultSummary(PluginDescriptor.createResultUrlName(url),
+                getNumberOfAnnotations(), getNumberOfModules());
+    }
+
+    public String getDisplayName() {
+        // FIXME l10n
+        return "Issues";
+    }
+
+    /**
      * Facade for the remote workspace.
      */
     interface Workspace extends Serializable {

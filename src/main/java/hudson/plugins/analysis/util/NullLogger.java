@@ -14,7 +14,7 @@ public final class NullLogger extends PluginLogger {
     }
 
     @Override
-    public void log(final String message) {
+    public void log(final String format, final Object[] args) {
         // do not log
     }
 
