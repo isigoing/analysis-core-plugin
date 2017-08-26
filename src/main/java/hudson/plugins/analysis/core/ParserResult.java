@@ -67,6 +67,8 @@ public class ParserResult implements Serializable {
      * @since 1.55
      */
     private final boolean canResolveRelativePaths;
+    
+    private List<String> ids = new ArrayList<String>();
 
     /**
      * Creates a new instance of {@link ParserResult}.
@@ -145,6 +147,8 @@ public class ParserResult implements Serializable {
         addAnnotations(additionalProject.getAnnotations());
         addErrors(additionalProject.getErrorMessages());
         addModules(additionalProject.getModules());
+        
+        ids.addAll(additionalProject.ids);
     }
 
     /**
@@ -473,6 +477,10 @@ public class ParserResult implements Serializable {
     public String getDisplayName() {
         // FIXME l10n
         return "Issues";
+    }
+
+    public void setId(final String id) {
+        this.ids.add(id);
     }
 
     /**
