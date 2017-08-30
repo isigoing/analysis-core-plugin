@@ -59,12 +59,16 @@ public abstract class IssueParser extends AbstractDescribableImpl<IssueParser> i
         return defaultPattern;
     }
 
-    public String getName() {
+    protected String getName() {
+        return "Static Analysis";
+    }
+
+    public String getLinkName() {
         return "Static Analysis Issues";
     }
 
     public String getTrendName() {
-        return "Static Analysis Issues Trend";
+        return "Static Analysis Trend";
     }
 
     public String getSmallIconUrl() {
@@ -77,6 +81,18 @@ public abstract class IssueParser extends AbstractDescribableImpl<IssueParser> i
 
     public String getResultUrl() {
         return getId() + "Result";
+    }
+
+    /**
+     * Returns a summary message for the summary.jelly file.
+     *
+     * @param url the url of the results
+     * @return the summary message
+     * @since 2.0
+     */
+    public String getSummary(final int numberOfIssues, final int numberOfModules) {
+        return getName() + ": " + new ResultSummaryPrinter().createDefaultSummary(getResultUrl(),
+                numberOfIssues, numberOfModules);
     }
 
     public static class IssueParserDescriptor extends Descriptor<IssueParser> {
@@ -102,6 +118,4 @@ public abstract class IssueParser extends AbstractDescribableImpl<IssueParser> i
         }
         throw new NoSuchElementException("IssueParser not found: " + id);
     }
-
-
 }

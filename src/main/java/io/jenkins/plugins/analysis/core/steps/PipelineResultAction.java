@@ -59,7 +59,7 @@ public class PipelineResultAction implements StaplerProxy, HealthReportingAction
 
     @Override @Exported
     public String getDisplayName() {
-        return getIssueParser().getName();
+        return getIssueParser().getLinkName();
     }
 
     @Override

@@ -14,7 +14,6 @@ import hudson.plugins.analysis.core.ResultAction;
  */
 public class AnalysisResult extends BuildResult {
     private final String id;
-    private final String summary;
     private final String displayName;
 
     /**
@@ -36,7 +35,6 @@ public class AnalysisResult extends BuildResult {
         super(build, referenceProvider, buildHistory, issues, defaultEncoding);
 
         this.id = id;
-        summary = issues.getSummary(id);
         displayName = issues.getDisplayName();
 
         serializeAnnotations(issues.getAnnotations());
@@ -54,12 +52,16 @@ public class AnalysisResult extends BuildResult {
 
     @Override
     public String getSummary() {
-        return summary;
+        return getIssueParser().getSummary(getNumberOfAnnotations(), getNumberOfModules());
+    }
+
+    private IssueParser getIssueParser() {
+        return IssueParser.find(id);
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return getIssueParser().getLinkName();
     }
 
 

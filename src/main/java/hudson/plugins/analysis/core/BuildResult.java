@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.thoughtworks.xstream.XStream;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.jenkins.plugins.analysis.core.steps.ResultSummaryPrinter;
 import jenkins.model.Jenkins;
 
 import hudson.XmlFile;
@@ -1338,41 +1339,7 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
      * @return the summary message
      */
     protected static String createDefaultSummary(final String url, final int warnings, final int modules) {
-        HtmlPrinter summary = new HtmlPrinter();
-
-        String message = createWarningsMessage(warnings);
-        if (warnings > 0) {
-            summary.append(summary.link(url, message));
-        }
-        else {
-            summary.append(message);
-        }
-        if (modules > 0) {
-            summary.append(" ");
-            summary.append(createAnalysesMessage(modules));
-        }
-        else {
-            summary.append(".");
-        }
-        return summary.toString();
-    }
-
-    private static String createAnalysesMessage(final int modules) {
-        if (modules == 1) {
-            return Messages.ResultAction_OneFile();
-        }
-        else {
-            return Messages.ResultAction_MultipleFiles(modules);
-        }
-    }
-
-    private static String createWarningsMessage(final int warnings) {
-        if (warnings == 1) {
-            return Messages.ResultAction_OneWarning();
-        }
-        else {
-            return Messages.ResultAction_MultipleWarnings(warnings);
-        }
+        return new ResultSummaryPrinter().createDefaultSummary(url, warnings, modules);
     }
 
     /**

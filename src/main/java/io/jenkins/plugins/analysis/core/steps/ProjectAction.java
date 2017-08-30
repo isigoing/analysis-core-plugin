@@ -83,7 +83,7 @@ public class ProjectAction implements Action {
 
     @Override @Exported
     public String getDisplayName() {
-        return getIssueParser().getName();
+        return getIssueParser().getLinkName();
     }
 
     private IssueParser getIssueParser() {
