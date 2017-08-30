@@ -483,6 +483,10 @@ public class ParserResult implements Serializable {
         this.ids.add(id);
     }
 
+    public List<String> getIds() {
+        return ids;
+    }
+
     /**
      * Facade for the remote workspace.
      */

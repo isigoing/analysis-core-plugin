@@ -213,6 +213,7 @@ public class FilesParser extends MasterToSlaveFileCallable<ParserResult> {
     public ParserResult invoke(final File workspace, final VirtualChannel channel)
             throws IOException {
         ParserResult result = new ParserResult(new FilePath(workspace), canResolveRelativePaths);
+        result.setId(pluginId);
         try {
             if (StringUtils.isBlank(filePattern)) {
                 parseSingleFile(workspace, result);
