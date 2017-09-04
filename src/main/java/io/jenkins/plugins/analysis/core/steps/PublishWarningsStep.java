@@ -3,7 +3,7 @@ package io.jenkins.plugins.analysis.core.steps;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -20,9 +20,11 @@ import com.google.common.collect.Sets;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.plugins.analysis.core.BuildHistory;
+import hudson.plugins.analysis.core.BuildResult;
 import hudson.plugins.analysis.core.ParserResult;
 import hudson.plugins.analysis.core.ReferenceFinder;
 import hudson.plugins.analysis.core.ReferenceProvider;
+import hudson.plugins.analysis.core.ResultAction;
 import hudson.plugins.analysis.core.ResultSelector;
 import hudson.plugins.analysis.util.model.Priority;
 
@@ -33,7 +35,7 @@ import hudson.plugins.analysis.util.model.Priority;
 public class PublishWarningsStep extends Step {
     private static final String DEFAULT_MINIMUM_PRIORITY = "low";
 
-    private ParserResult warnings;
+    private ParserResult[] warnings;
 
     private boolean usePreviousBuildAsReference;
     private boolean useStableBuildAsReference;
@@ -48,11 +50,15 @@ public class PublishWarningsStep extends Step {
     private String minimumPriority = DEFAULT_MINIMUM_PRIORITY;
 
     @DataBoundConstructor
-    public PublishWarningsStep(final ParserResult warnings) {
+    public PublishWarningsStep(final ParserResult... warnings) {
         this.warnings = warnings;
+
+        if (warnings == null || warnings.length == 0) {
+            throw new IllegalArgumentException("No warnings provided");
+        }
     }
 
-    public ParserResult getWarnings() {
+    public ParserResult[] getWarnings() {
         return warnings;
     }
 
@@ -157,7 +163,7 @@ public class PublishWarningsStep extends Step {
         private boolean useStableBuildAsReference;
         private boolean usePreviousBuildAsReference;
         private String defaultEncoding;
-        private ParserResult warnings;
+        private ParserResult[] warnings;
 
         protected Execution(@Nonnull final StepContext context, final PublishWarningsStep step) {
             super(context);
@@ -181,20 +187,39 @@ public class PublishWarningsStep extends Step {
 
         @Override
         protected PipelineResultAction run() throws Exception {
-            List<String> ids = warnings.getIds();
-
-            if (ids.size() == 1) {
-                return publishSingleParserResult(ids.get(0));
+            Set<String> ids = new HashSet<String>();
+            for (ParserResult result : warnings) {
+                ids.add(result.getId());
             }
 
-            // FIXME
-            return null;
+            if (ids.size() == 1) {
+                return publishSingleParserResult(ids.iterator().next());
+            }
+            else {
+                return publishMultipleParserResults();
+            }
+        }
+
+        private PipelineResultAction publishMultipleParserResults() throws IOException, InterruptedException {
+            String id = "staticAnalysis";
+            ResultSelector selector = new ByIdResultSelector(id);
+            Run run = getRun();
+            ResultAction<? extends BuildResult> other = selector.get(run);
+            if (other != null) {
+                throw new IllegalStateException("There is already an action registered with ID " + id);
+            }
+            return publishResult(id, run, selector);
         }
 
         private PipelineResultAction publishSingleParserResult(final String id) throws IOException, InterruptedException {
-            Run run = getContext().get(Run.class);
+            return publishResult(id, getRun(), new ByIdResultSelector(id));
+        }
 
-            ResultSelector selector = new ByIdResultSelector(id);
+        private Run getRun() throws IOException, InterruptedException {
+            return getContext().get(Run.class);
+        }
+
+        private PipelineResultAction publishResult(final String id, final Run run, final ResultSelector selector) {
             ReferenceProvider referenceProvider = ReferenceFinder.create(run,
                     selector, usePreviousBuildAsReference, useStableBuildAsReference);
             BuildHistory buildHistory = new BuildHistory(run, selector);

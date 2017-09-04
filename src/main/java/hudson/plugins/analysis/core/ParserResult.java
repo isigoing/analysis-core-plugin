@@ -68,7 +68,7 @@ public class ParserResult implements Serializable {
      */
     private final boolean canResolveRelativePaths;
     
-    private List<String> ids = new ArrayList<String>();
+    private String id;
 
     /**
      * Creates a new instance of {@link ParserResult}.
@@ -144,11 +144,14 @@ public class ParserResult implements Serializable {
      * @param additionalProject the project to add
      */
     public void addProject(final ParserResult additionalProject) {
+        // FIXME: does it make sense to activate? Warnings Tests will fail...
+//        if (ObjectUtils.notEqual(additionalProject.getId(), getId())) {
+//            throw new IllegalArgumentException("Can't merge project with ID "
+//                    + additionalProject.getId() + " into this project with ID " + getId());
+//        }
         addAnnotations(additionalProject.getAnnotations());
         addErrors(additionalProject.getErrorMessages());
         addModules(additionalProject.getModules());
-        
-        ids.addAll(additionalProject.ids);
     }
 
     /**
@@ -461,17 +464,13 @@ public class ParserResult implements Serializable {
         return StringUtils.defaultString(logMessage);
     }
 
-    public String getDisplayName() {
-        // FIXME l10n
-        return "Issues";
-    }
-
+    // FIXME: constructor and final?
     public void setId(final String id) {
-        this.ids.add(id);
+        this.id = id;
     }
 
-    public List<String> getIds() {
-        return ids;
+    public String getId() {
+        return id;
     }
 
     /**

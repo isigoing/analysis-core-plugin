@@ -14,7 +14,6 @@ import hudson.plugins.analysis.core.ResultAction;
  */
 public class AnalysisResult extends BuildResult {
     private final String id;
-    private final String displayName;
 
     /**
      * Creates a new instance of {@link AnalysisResult}.
@@ -30,14 +29,22 @@ public class AnalysisResult extends BuildResult {
      * @param id
      *            the parser group this result belongs to
      */
-    public AnalysisResult(final Run build, final String defaultEncoding, final ParserResult issues,
+    // FIXME: move issues to end with vararg
+    public AnalysisResult(final Run build, final String defaultEncoding, final ParserResult[] issues,
             final ReferenceProvider referenceProvider, final HistoryProvider buildHistory, final String id) {
-        super(build, referenceProvider, buildHistory, issues, defaultEncoding);
+        super(build, referenceProvider, buildHistory, merge(issues), defaultEncoding);
 
         this.id = id;
-        displayName = issues.getDisplayName();
 
-        serializeAnnotations(issues.getAnnotations());
+        serializeAnnotations(getAnnotations()); // FIXME: already in parent?
+    }
+
+    private static ParserResult merge(final ParserResult[] issues) {
+        ParserResult merged = issues[0];
+        for (int i = 1; i < issues.length; i++) {
+            merged.addProject(issues[i]);
+        }
+        return merged;
     }
 
     @Override
@@ -47,7 +54,7 @@ public class AnalysisResult extends BuildResult {
 
     @Override
     protected Class<? extends ResultAction<? extends BuildResult>> getResultActionType() {
-        return null;
+        return PipelineResultAction.class; // FIXME: why is this required?
     }
 
     @Override
