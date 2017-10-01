@@ -1287,25 +1287,6 @@ public abstract class BuildResult implements ModelObject, Serializable, Annotati
     }
 
     /**
-     * Returns whether there is a previous result available.
-     *
-     * @return <code>true</code> if there is a previous result available
-     * TODO: remove
-     */
-    public boolean hasPreviousResult() {
-        return buildHistory.hasPreviousResult();
-    }
-
-    /**
-     * Returns the previous build result.
-     *
-     * @return the previous build result
-     * TODO: remove
-     */
-    public BuildResult getPreviousResult() {
-        return buildHistory.getPreviousResult();
-    }
-
     /**
      * Resets the successful high score counters.
      */

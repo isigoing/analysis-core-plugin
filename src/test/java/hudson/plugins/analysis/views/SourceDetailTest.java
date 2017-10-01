@@ -12,9 +12,8 @@ import org.apache.commons.io.LineIterator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.easymock.EasyMock.*;
+import static org.mockito.Mockito.*;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.plugins.analysis.util.model.FileAnnotation;
 import hudson.plugins.analysis.util.model.LineRange;
@@ -36,12 +35,10 @@ public class SourceDetailTest {
      */
     @Test
     public void checkCorrectOffset() throws IOException {
-        FileAnnotation annotation = createMock(FileAnnotation.class);
+        FileAnnotation annotation = mock(FileAnnotation.class);
 
-        expect(annotation.getFileName()).andReturn("").anyTimes();
-        expect(annotation.getTempName((AbstractBuild<?, ?>)anyObject())).andReturn("").anyTimes();
-
-        replay(annotation);
+        when(annotation.getFileName()).thenReturn("");
+        when(annotation.getTempName(any(Run.class))).thenReturn("");
 
         SourceDetail source = createSourceDetail(annotation);
 
@@ -66,8 +63,6 @@ public class SourceDetailTest {
             line++;
         }
         Assert.assertEquals("Wrong offset during source highlighting.", 12, offset);
-
-        verify(annotation);
     }
 
     private SourceDetail createSourceDetail(final FileAnnotation annotation) {
@@ -126,15 +121,13 @@ public class SourceDetailTest {
     private void split(final String fileName, final List<LineRange> lineRanges) throws IOException {
         InputStream stream = SourceDetailTest.class.getResourceAsStream("AbortException.txt");
 
-        FileAnnotation annotation = createMock(FileAnnotation.class);
+        FileAnnotation annotation = mock(FileAnnotation.class);
 
-        expect(annotation.getLineRanges()).andReturn(lineRanges);
-        expect(annotation.getFileName()).andReturn("").anyTimes();
-        expect(annotation.getTempName((AbstractBuild<?, ?>)anyObject())).andReturn("").anyTimes();
-        expect(annotation.getMessage()).andReturn("Message ").anyTimes();
-        expect(annotation.getToolTip()).andReturn("Tooltip").anyTimes();
-
-        replay(annotation);
+        when(annotation.getLineRanges()).thenReturn(lineRanges);
+        when(annotation.getFileName()).thenReturn("");
+        when(annotation.getTempName(any(Run.class))).thenReturn("");
+        when(annotation.getMessage()).thenReturn("Message ");
+        when(annotation.getToolTip()).thenReturn("Tooltip");
 
         SourceDetail source = createSourceDetail(annotation);
 
@@ -158,8 +151,6 @@ public class SourceDetailTest {
 
             Assert.assertEquals(expectedLine, actualLine);
         }
-
-        verify(annotation);
     }
 }
 

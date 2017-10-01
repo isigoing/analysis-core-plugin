@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,7 +29,7 @@ import com.google.common.base.Objects;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.plugins.analysis.core.BuildResult;
-import hudson.plugins.analysis.core.ResultAction;
+import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.util.Graph;
 import hudson.util.ShiftedCategoryAxis;
 
@@ -115,7 +116,7 @@ public abstract class BuildResultGraph {
      *
      * @param configuration
      *            the configuration parameters
-     * @param resultAction
+     * @param history
      *            the result action to start the graph computation from
      * @param pluginName
      *            the name of the plug-in (project action URL) to create links
@@ -123,7 +124,7 @@ public abstract class BuildResultGraph {
      * @return the graph
      */
     public abstract JFreeChart create(final GraphConfiguration configuration,
-            final ResultAction<? extends BuildResult> resultAction, @CheckForNull final String pluginName);
+            final HistoryProvider history, @CheckForNull final String pluginName);
 
     /**
      * Creates a PNG image trend graph with clickable map.
@@ -137,7 +138,7 @@ public abstract class BuildResultGraph {
      * @return the graph
      */
     public abstract JFreeChart createAggregation(final GraphConfiguration configuration,
-            final Collection<ResultAction<? extends BuildResult>> resultActions, final String pluginName);
+            final Collection<HistoryProvider> resultActions, final String pluginName);
 
     /**
      * Computes the delta between two dates in days.
@@ -240,15 +241,15 @@ public abstract class BuildResultGraph {
      *            the graph configuration
      * @param pluginName
      *            the name of the plug-in
-     * @param lastAction
+     * @param history
      *            the last valid action for this project
      * @return the graph to render
      */
-    public Graph getGraph(final long timestamp, final GraphConfiguration configuration, final String pluginName, final ResultAction<?> lastAction) {
+    public Graph getGraph(final long timestamp, final GraphConfiguration configuration, final String pluginName, final HistoryProvider history) {
         return new Graph(timestamp, configuration.getWidth(), configuration.getHeight()) {
             @Override
             protected JFreeChart createGraph() {
-                return create(configuration, lastAction, pluginName);
+                return create(configuration, history, pluginName);
             }
         };
     }
@@ -267,7 +268,7 @@ public abstract class BuildResultGraph {
      *            the actions to get the summary graph for
      * @return the graph to render
      */
-    public Graph getGraph(final long timestamp, final GraphConfiguration configuration, final String pluginName, final Collection<ResultAction<?>> actions) {
+    public Graph getGraph(final long timestamp, final GraphConfiguration configuration, final String pluginName, final List<HistoryProvider> actions) {
         return new Graph(timestamp, configuration.getWidth(), configuration.getHeight()) {
             @Override
             protected JFreeChart createGraph() {

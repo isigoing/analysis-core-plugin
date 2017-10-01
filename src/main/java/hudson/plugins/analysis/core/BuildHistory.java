@@ -3,6 +3,7 @@ package hudson.plugins.analysis.core;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import hudson.model.Result;
@@ -46,10 +47,23 @@ public class BuildHistory implements HistoryProvider {
     }
 
     protected ResultAction<? extends BuildResult> getAction(final boolean isStatusRelevant, final boolean mustBeStable) {
-        for (Run<?, ?> build = baseline.getPreviousBuild(); build != null; build = build.getPreviousBuild()) {
+        return getAction(isStatusRelevant, mustBeStable, this.baseline);
+    }
+
+    private ResultAction<? extends BuildResult> getAction(final boolean isStatusRelevant, final boolean mustBeStable, final Run<?, ?> firstBuild) {
+        Run<?, ?> run = getPreviousRun(isStatusRelevant, mustBeStable, firstBuild);
+        if (run != null) {
+            return getResultAction(run);
+        }
+
+        return null;
+    }
+
+    private Run<?, ?> getPreviousRun(final boolean isStatusRelevant, final boolean mustBeStable, final Run<?, ?> firstBuild) {
+        for (Run<?, ?> build = firstBuild.getPreviousBuild(); build != null; build = build.getPreviousBuild()) {
             ResultAction<? extends BuildResult> action = getResultAction(build);
             if (hasValidResult(build, mustBeStable, action) && isSuccessfulAction(action, isStatusRelevant)) {
-                return action;
+                return build;
             }
         }
         return null;
@@ -143,6 +157,35 @@ public class BuildHistory implements HistoryProvider {
      */
     public AbstractHealthDescriptor getHealthDescriptor() {
         return getBaseline().getHealthDescriptor();
+    }
+
+    @Override
+    public Iterator<BuildResult> iterator() {
+        return new BuildResultIterator(baseline);
+    }
+
+    private class BuildResultIterator implements Iterator<BuildResult> {
+        private Run<?, ?> baseline;
+
+        public BuildResultIterator(final Run<?, ?> baseline) {
+            this.baseline = baseline;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return getPreviousRun(false, false, baseline) != null;
+        }
+
+        @Override
+        public BuildResult next() {
+            baseline = getPreviousRun(false, false, baseline);
+            return getResultAction(baseline).getResult();
+        }
+
+        @Override
+        public void remove() {
+            // NOP
+        }
     }
 }
 

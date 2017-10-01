@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
  *
  * @author Ullrich Hafner
  */
-public interface HistoryProvider {
+public interface HistoryProvider extends Iterable<BuildResult> {
     /**
      * Returns whether a previous build result exists.
      *

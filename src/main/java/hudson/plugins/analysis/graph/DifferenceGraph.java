@@ -17,8 +17,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import hudson.plugins.analysis.Messages;
-import hudson.plugins.analysis.core.ResultAction;
 import hudson.plugins.analysis.core.BuildResult;
+import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.plugins.analysis.util.CategoryUrlBuilder;
 import hudson.plugins.analysis.util.Pair;
 
@@ -41,11 +41,11 @@ public class DifferenceGraph extends BuildResultGraph {
 
     @Override
     public JFreeChart create(final GraphConfiguration configuration,
-            final ResultAction<? extends BuildResult> resultAction, final String pluginName) {
+            final HistoryProvider history, final String pluginName) {
         ArrayList<Pair<Integer, Integer>> fixedWarnings = new ArrayList<Pair<Integer, Integer>>();
         ArrayList<Pair<Integer, Integer>> newWarnings = new ArrayList<Pair<Integer, Integer>>();
 
-        extractPoints(configuration, resultAction, fixedWarnings, newWarnings);
+        extractPoints(configuration, history, fixedWarnings, newWarnings);
         XYSeriesCollection xySeriesCollection = computeDifferenceSeries(fixedWarnings, newWarnings);
 
         JFreeChart chart = createXYChart(xySeriesCollection);
@@ -66,7 +66,7 @@ public class DifferenceGraph extends BuildResultGraph {
 
     @Override
     public JFreeChart createAggregation(final GraphConfiguration configuration,
-            final Collection<ResultAction<? extends BuildResult>> resultActions, final String pluginName) {
+            final Collection<HistoryProvider> resultActions, final String pluginName) {
         return create(configuration, resultActions.iterator().next(), pluginName);
     }
 
@@ -110,32 +110,24 @@ public class DifferenceGraph extends BuildResultGraph {
      *
      * @param configuration
      *            the configuration parameters
-     * @param action
+     * @param history
      *            the result action to start the graph computation from
      * @param fixedWarnings
      *            list of pairs with the points for the fixed warnings
      * @param newWarnings
      *            list of pairs with the points for the new warnings
      */
-    private void extractPoints(final GraphConfiguration configuration, final ResultAction<? extends BuildResult> action,
+    private void extractPoints(final GraphConfiguration configuration, final HistoryProvider history,
             final List<Pair<Integer, Integer>> fixedWarnings, final List<Pair<Integer, Integer>> newWarnings) {
         int buildCount = 0;
-        BuildResult current = action.getResult();
-        while (true) {
+        for (BuildResult current : history) {
             if (isBuildTooOld(configuration, current)) {
                 break;
             }
 
             int build = current.getOwner().getNumber();
-            fixedWarnings.add(new Pair<Integer, Integer>(build, current.getNumberOfFixedWarnings()));
-            newWarnings.add(new Pair<Integer, Integer>(build, current.getNumberOfNewWarnings()));
-
-            if (current.hasPreviousResult()) {
-                current = current.getPreviousResult();
-            }
-            else {
-                break;
-            }
+            fixedWarnings.add(new Pair<>(build, current.getNumberOfFixedWarnings()));
+            newWarnings.add(new Pair<>(build, current.getNumberOfNewWarnings()));
 
             if (configuration.isBuildCountDefined()) {
                 buildCount++;

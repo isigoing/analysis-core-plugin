@@ -30,7 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Run;
 import hudson.plugins.analysis.Messages;
 import hudson.plugins.analysis.core.BuildResult;
-import hudson.plugins.analysis.core.ResultAction;
+import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.plugins.analysis.util.ToolTipProvider;
 import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.DataSetBuilder;
@@ -49,7 +49,7 @@ public abstract class CategoryBuildResultGraph extends BuildResultGraph {
      *
      * @param configuration
      *            the configuration parameters
-     * @param resultAction
+     * @param history
      *            the result action to start the graph computation from
      * @param pluginName
      *            the name of the plug-in
@@ -57,10 +57,10 @@ public abstract class CategoryBuildResultGraph extends BuildResultGraph {
      */
     @Override
     public JFreeChart create(final GraphConfiguration configuration,
-            final ResultAction<? extends BuildResult> resultAction, final String pluginName) {
-        JFreeChart chart = createChart(configuration, resultAction);
+            final HistoryProvider history, final String pluginName) {
+        JFreeChart chart = createChart(configuration, history);
 
-        attachRenderers(configuration, pluginName, chart, resultAction.getToolTipProvider());
+        attachRenderers(configuration, pluginName, chart, history.getBaseline().getToolTipProvider());
 
         return chart;
     }
@@ -79,19 +79,19 @@ public abstract class CategoryBuildResultGraph extends BuildResultGraph {
     @Override
     @SuppressFBWarnings("WMI")
     public JFreeChart createAggregation(final GraphConfiguration configuration,
-            final Collection<ResultAction<? extends BuildResult>> resultActions, final String pluginName) {
+            final Collection<HistoryProvider> resultActions, final String pluginName) {
         Set<LocalDate> availableDates = Sets.newHashSet();
-        Map<ResultAction<? extends BuildResult>, Map<LocalDate, List<Integer>>> averagesPerJob = Maps.newHashMap();
-        for (ResultAction<? extends BuildResult> resultAction : resultActions) {
+        Map<HistoryProvider, Map<LocalDate, List<Integer>>> averagesPerJob = Maps.newHashMap();
+        for (HistoryProvider resultAction : resultActions) {
             Map<LocalDate, List<Integer>> averageByDate = averageByDate(
-                    createSeriesPerBuild(configuration, resultAction.getResult()));
+                    createSeriesPerBuild(configuration, resultAction));
             averagesPerJob.put(resultAction, averageByDate);
             availableDates.addAll(averageByDate.keySet());
         }
         JFreeChart chart = createChart(createDatasetPerDay(
                         createTotalsForAllAvailableDates(resultActions, availableDates, averagesPerJob)));
 
-        attachRenderers(configuration, pluginName, chart, resultActions.iterator().next().getToolTipProvider());
+        attachRenderers(configuration, pluginName, chart, resultActions.iterator().next().getBaseline().getToolTipProvider());
 
         return chart;
     }
@@ -110,14 +110,14 @@ public abstract class CategoryBuildResultGraph extends BuildResultGraph {
      */
     @SuppressWarnings("unchecked")
     private Map<LocalDate, List<Integer>> createTotalsForAllAvailableDates(
-            final Collection<ResultAction<? extends BuildResult>> jobs,
+            final Collection<HistoryProvider> jobs,
             final Set<LocalDate> availableDates,
-            final Map<ResultAction<? extends BuildResult>, Map<LocalDate, List<Integer>>> averagesPerJob) {
+            final Map<HistoryProvider, Map<LocalDate, List<Integer>>> averagesPerJob) {
         List<LocalDate> sortedDates = Lists.newArrayList(availableDates);
         Collections.sort(sortedDates);
 
         Map<LocalDate, List<Integer>> totals = Maps.newHashMap();
-        for (ResultAction<? extends BuildResult> jobResult : jobs) {
+        for (HistoryProvider jobResult : jobs) {
             Map<LocalDate, List<Integer>> availableResults = averagesPerJob.get(jobResult);
             List<Integer> lastResult = Collections.emptyList();
             for (LocalDate buildDate : sortedDates) {
@@ -173,18 +173,18 @@ public abstract class CategoryBuildResultGraph extends BuildResultGraph {
      *
      * @param configuration
      *            the configuration parameters
-     * @param action
+     * @param history
      *            the action to start with
      * @return the created chart
      */
-    protected JFreeChart createChart(final GraphConfiguration configuration, final ResultAction<? extends BuildResult> action) {
+    protected JFreeChart createChart(final GraphConfiguration configuration, final HistoryProvider history) {
         CategoryDataset dataSet;
         if (configuration.useBuildDateAsDomain()) {
-            Map<LocalDate, List<Integer>> averagePerDay = averageByDate(createSeriesPerBuild(configuration, action.getResult()));
+            Map<LocalDate, List<Integer>> averagePerDay = averageByDate(createSeriesPerBuild(configuration, history));
             dataSet = createDatasetPerDay(averagePerDay);
         }
         else {
-            dataSet = createDatasetPerBuildNumber(createSeriesPerBuild(configuration, action.getResult()));
+            dataSet = createDatasetPerBuildNumber(createSeriesPerBuild(configuration, history));
         }
         return createChart(dataSet);
     }
@@ -194,35 +194,24 @@ public abstract class CategoryBuildResultGraph extends BuildResultGraph {
      *
      * @param configuration
      *            the configuration
-     * @param lastBuildResult
-     *            the build result to start with
+     * @param history
+     *            the build history
      * @return a series of values per build
      */
     @SuppressWarnings("rawtypes")
     private Map<Run, List<Integer>> createSeriesPerBuild(
-            final GraphConfiguration configuration, final BuildResult lastBuildResult) {
-        BuildResult current = lastBuildResult;
-
+            final GraphConfiguration configuration, final HistoryProvider history) {
         int buildCount = 0;
         Map<Run, List<Integer>> valuesPerBuild = Maps.newHashMap();
         String parameterName = configuration.getParameterName();
         String parameterValue = configuration.getParameterValue();
-        while (true) {
+
+        for (BuildResult current : history) {
             if (isBuildTooOld(configuration, current)) {
                 break;
             }
             if (passesFilteringByParameter(current.getOwner(), parameterName, parameterValue)) {
                 valuesPerBuild.put(current.getOwner(), computeSeries(current));
-            }
-
-            if (current.hasPreviousResult()) {
-                current = current.getPreviousResult();
-                if (current == null) {
-                    break; // see: JENKINS-6613
-                }
-            }
-            else {
-                break;
             }
 
             if (configuration.isBuildCountDefined()) {

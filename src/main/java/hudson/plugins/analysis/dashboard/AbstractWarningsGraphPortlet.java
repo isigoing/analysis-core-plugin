@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 
 import hudson.model.Job;
 
-import hudson.plugins.analysis.core.ResultAction;
+import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.plugins.analysis.core.AbstractProjectAction;
 import hudson.plugins.analysis.graph.BuildResultGraph;
 import hudson.plugins.analysis.graph.GraphConfiguration;
@@ -100,7 +100,7 @@ public abstract class AbstractWarningsGraphPortlet extends AbstractPortlet {
      * @return the trend graph
      */
     public Graph getWarningsGraph() {
-        List<ResultAction<?>> results = getActions();
+        List<HistoryProvider> results = getActions();
         BuildResultGraph graph;
         if (results.isEmpty()) {
             graph = new NullGraph();
@@ -132,12 +132,12 @@ public abstract class AbstractWarningsGraphPortlet extends AbstractPortlet {
      *
      * @return the actions that should be used as base for the graph
      */
-    private List<ResultAction<?>> getActions() {
-        List<ResultAction<?>> results = Lists.newArrayList();
+    private List<HistoryProvider> getActions() {
+        List<HistoryProvider> results = Lists.newArrayList();
         for (Job<?, ?> job : getDashboard().getJobs()) {
             AbstractProjectAction<?> action = selectAction(job);
             if (action != null && action.hasValidResults()) {
-                results.add(action.getLastAction());
+                results.add(action.createBuildHistory());
             }
         }
         return results;

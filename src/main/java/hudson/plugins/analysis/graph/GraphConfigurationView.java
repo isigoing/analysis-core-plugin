@@ -201,7 +201,7 @@ public abstract class GraphConfigurationView implements ModelObject {
         try {
             BuildResultGraph graph = configuration.getGraph(graphId);
             if (hasMeaningfulGraph() && graph.isVisible()) {
-                return graph.getGraph(-1, configuration, null, buildHistory.getBaseline());
+                return graph.getGraph(-1, configuration, null, buildHistory);
             }
             response.sendRedirect2(request.getContextPath() + graph.getExampleImage());
         }
@@ -222,7 +222,7 @@ public abstract class GraphConfigurationView implements ModelObject {
      * @return the graph renderer of the specified graph
      */
     public Graph getGraphRenderer(final BuildResultGraph graph, final String url) {
-        return graph.getGraph(getTimestamp(), configuration, url, buildHistory.getBaseline());
+        return graph.getGraph(getTimestamp(), configuration, url, buildHistory);
     }
 
     /**

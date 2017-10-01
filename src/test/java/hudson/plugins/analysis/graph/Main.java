@@ -1,23 +1,18 @@
 package hudson.plugins.analysis.graph;
 
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
 import com.google.common.collect.Lists;
 
-import hudson.model.AbstractBuild;
+import static org.mockito.Mockito.*;
 
+import hudson.model.AbstractBuild;
 import hudson.plugins.analysis.core.BuildResult;
 import hudson.plugins.analysis.core.ResultAction;
-import hudson.plugins.analysis.util.ToolTipProvider;
 import hudson.plugins.analysis.util.model.Priority;
 
 /**
@@ -25,6 +20,7 @@ import hudson.plugins.analysis.util.model.Priority;
  *
  * @author Ulli Hafner
  */
+// FIXME: does it still work?
 // CHECKSTYLE:OFF
 public class Main extends ApplicationFrame {
     /** Unique ID. */
@@ -40,29 +36,29 @@ public class Main extends ApplicationFrame {
     public Main(final BuildResultGraph graph) {
         super(graph.getLabel());
 
-        GraphConfiguration configuration = new GraphConfiguration(new ArrayList<BuildResultGraph>());
-        BuildResult result1 = createResult(1, 5, 10);
-        when(result1.hasPreviousResult()).thenReturn(false);
-        BuildResult result2 = createResult(2, 15, 10);
-        when(result2.hasPreviousResult()).thenReturn(true);
-        when(result2.getPreviousResult()).thenReturn(result1);
-        BuildResult result3 = createResult(3, 25, 20);
-        when(result3.hasPreviousResult()).thenReturn(true);
-        when(result3.getPreviousResult()).thenReturn(result2);
-        BuildResult result4 = createResult(4, 5, 15);
-        when(result4.hasPreviousResult()).thenReturn(true);
-        when(result4.getPreviousResult()).thenReturn(result3);
-
-        ResultAction action = mock(ResultAction.class);
-        when(action.getResult()).thenReturn(result4);
-        ToolTipProvider toolTipProvider = mock(ToolTipProvider.class);
-        when(action.getToolTipProvider()).thenReturn(toolTipProvider);
-
-        JFreeChart chart = graph.create(configuration, action, "frame");
-
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-        setContentPane(chartPanel);
+////        GraphConfiguration configuration = new GraphConfiguration(new ArrayList<BuildResultGraph>());
+////        BuildResult result1 = createResult(1, 5, 10);
+////        when(result1.hasPreviousResult()).thenReturn(false);
+////        BuildResult result2 = createResult(2, 15, 10);
+////        when(result2.hasPreviousResult()).thenReturn(true);
+////        when(result2.getPreviousResult()).thenReturn(result1);
+////        BuildResult result3 = createResult(3, 25, 20);
+////        when(result3.hasPreviousResult()).thenReturn(true);
+////        when(result3.getPreviousResult()).thenReturn(result2);
+////        BuildResult result4 = createResult(4, 5, 15);
+////        when(result4.hasPreviousResult()).thenReturn(true);
+////        when(result4.getPreviousResult()).thenReturn(result3);
+////
+////        ResultAction action = mock(ResultAction.class);
+////        when(action.getResult()).thenReturn(result4);
+////        ToolTipProvider toolTipProvider = mock(ToolTipProvider.class);
+////        when(action.getToolTipProvider()).thenReturn(toolTipProvider);
+////
+////        JFreeChart chart = graph.create(configuration, action, "frame");
+//
+//        ChartPanel chartPanel = new ChartPanel(chart);
+//        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+//        setContentPane(chartPanel);
     }
 
     /**

@@ -6,8 +6,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import hudson.plugins.analysis.Messages;
-import hudson.plugins.analysis.core.BuildResult;
-import hudson.plugins.analysis.core.ResultAction;
+import hudson.plugins.analysis.core.HistoryProvider;
 
 /**
  * Empty graph. Null object: this graph does not render anything.
@@ -26,14 +25,13 @@ public class EmptyGraph extends BuildResultGraph {
     }
 
     @Override
-    public JFreeChart create(final GraphConfiguration configuration,
-            final ResultAction<? extends BuildResult> resultAction, final String pluginName) {
+    public JFreeChart create(final GraphConfiguration configuration, final HistoryProvider history, final String pluginName) {
         return createXYChart(new XYSeriesCollection());
     }
 
     @Override
     public JFreeChart createAggregation(final GraphConfiguration configuration,
-            final Collection<ResultAction<? extends BuildResult>> resultActions, final String pluginName) {
+            final Collection<HistoryProvider> resultActions, final String pluginName) {
         return createXYChart(new XYSeriesCollection());
     }
 

@@ -17,7 +17,7 @@ import org.jfree.data.category.CategoryDataset;
 
 import hudson.plugins.analysis.Messages;
 import hudson.plugins.analysis.core.BuildResult;
-import hudson.plugins.analysis.core.ResultAction;
+import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.plugins.analysis.util.ToolTipProvider;
 import hudson.plugins.analysis.util.model.FileAnnotation;
 import hudson.util.DataSetBuilder;
@@ -32,12 +32,12 @@ import hudson.util.DataSetBuilder;
 public class AnnotationsByUserGraph extends BuildResultGraph {
     @Override
     public JFreeChart create(final GraphConfiguration configuration,
-            final ResultAction<? extends BuildResult> resultAction, @CheckForNull final String pluginName) {
+            final HistoryProvider history, @CheckForNull final String pluginName) {
         Map<String, Integer[]> annotationCountByUser = new HashMap<String, Integer[]>();
 
-        mergeResults(resultAction.getResult(), annotationCountByUser);
+        mergeResults(history.getBaseline().getResult(), annotationCountByUser);
 
-        return createGraphFromUserMapping(configuration, pluginName, annotationCountByUser, resultAction.getToolTipProvider());
+        return createGraphFromUserMapping(configuration, pluginName, annotationCountByUser, history.getBaseline().getToolTipProvider());
     }
 
     private JFreeChart createGraphFromUserMapping(final GraphConfiguration configuration, final @CheckForNull String pluginName, final Map<String, Integer[]> annotationCountByUser, final ToolTipProvider toolTipProvider) {
@@ -49,15 +49,15 @@ public class AnnotationsByUserGraph extends BuildResultGraph {
     }
 
     @Override
-    public JFreeChart createAggregation(final GraphConfiguration configuration, final Collection<ResultAction<? extends BuildResult>> resultActions, final String pluginName) {
+    public JFreeChart createAggregation(final GraphConfiguration configuration, final Collection<HistoryProvider> resultActions, final String pluginName) {
         Map<String, Integer[]> annotationCountByUser = new HashMap<String, Integer[]>();
 
-        for (ResultAction<? extends BuildResult> resultAction : resultActions) {
-            mergeResults(resultAction.getResult(), annotationCountByUser);
+        for (HistoryProvider resultAction : resultActions) {
+            mergeResults(resultAction.getBaseline().getResult(), annotationCountByUser);
         }
 
         return createGraphFromUserMapping(configuration, pluginName, annotationCountByUser,
-                resultActions.iterator().next().getToolTipProvider());
+                resultActions.iterator().next().getBaseline().getToolTipProvider());
     }
 
     /**

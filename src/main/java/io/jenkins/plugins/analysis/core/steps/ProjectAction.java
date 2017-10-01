@@ -21,7 +21,6 @@ import hudson.model.Api;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.plugins.analysis.core.BuildHistory;
-import hudson.plugins.analysis.core.DefaultResultSelector;
 import hudson.plugins.analysis.core.GlobalSettings;
 import hudson.plugins.analysis.core.HistoryProvider;
 import hudson.plugins.analysis.core.NullBuildHistory;
@@ -275,7 +274,7 @@ public class ProjectAction implements Action {
             return new NullBuildHistory();
         }
         else {
-            return new BuildHistory(lastFinishedRun, new DefaultResultSelector(PipelineResultAction.class));
+            return new BuildHistory(lastFinishedRun, new ByIdResultSelector(id));
         }
     }
 
